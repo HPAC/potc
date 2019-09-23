@@ -1,0 +1,38 @@
+parameter cutoff = file(1);
+parameter grid_size_rho = file(2);
+parameter grid_size = file(3);
+parameter rho(i : atom_type; j : atom_type; r : distance) =
+    spline_grid(rho, 3, 0, grid_size, 3);
+parameter F(i : atom_type; r : real) =
+    spline_grid(F, 3, 0, grid_size_rho, 1);
+parameter phi(i : atom_type; j : atom_type; r : distance) = 
+    spline_grid(phi, 3, 0, grid_size, 3);
+parameter w(i : atom_type; j : atom_type; r : distance) = 
+    spline_grid(phi, 3, 0, grid_size, 3);
+parameter u(i : atom_type; j : atom_type; r : distance) = 
+    spline_grid(phi, 3, 0, grid_size, 3);
+
+function rx(i: atom; j: atom) = _px(i) - _px(j);
+function ry(i: atom; j: atom) = _py(i) - _py(j);
+function rz(i: atom; j: atom) = _pz(i) - _pz(j);
+
+peratom mux(i: atom) = sum(j : neighbors(i, cutoff)) u(i, j, r(i, j)) * rx(i, j);
+peratom muy(i: atom) = sum(j : neighbors(i, cutoff)) u(i, j, r(i, j)) * ry(i, j);
+peratom muz(i: atom) = sum(j : neighbors(i, cutoff)) u(i, j, r(i, j)) * rz(i, j);
+
+peratom lambdaxx(i: atom) = sum(j : neighbors(i, cutoff)) w(i, j, r(i, j)) * rx(i, j) * rx(i, j);
+peratom lambdaxy(i: atom) = sum(j : neighbors(i, cutoff)) w(i, j, r(i, j)) * rx(i, j) * ry(i, j);
+peratom lambdaxz(i: atom) = sum(j : neighbors(i, cutoff)) w(i, j, r(i, j)) * rx(i, j) * rz(i, j);
+peratom lambdayy(i: atom) = sum(j : neighbors(i, cutoff)) w(i, j, r(i, j)) * ry(i, j) * ry(i, j);
+peratom lambdayz(i: atom) = sum(j : neighbors(i, cutoff)) w(i, j, r(i, j)) * ry(i, j) * rz(i, j);
+peratom lambdazz(i: atom) = sum(j : neighbors(i, cutoff)) w(i, j, r(i, j)) * rz(i, j) * rz(i, j);
+
+function v(i: atom) = lambdaxx(i) + lambdayy(i) + lambdazz(i);
+
+peratom rho_sum(i : atom) = sum(j : neighbors(i, cutoff)) rho(i, j, r(i, j));
+
+energy sum(i : all_atoms) F(i, rho_sum(i)); 
+energy sum(i : all_atoms) sum(j : neighbors_half(i, cutoff)) phi(i, j, r(i, j)) / r(i, j);
+energy 1/2 * sum(i : all_atoms) mux(i)^2 + muy(i)^2 + muz(i)^2;
+energy 1/2 * sum(i : all_atoms) lambdaxx(i)^2 + lambdayy(i)^2 + lambdazz(i)^2 + 2 * lambdaxy(i)^2 + 2 * lambdaxz(i)^2 + 2 * lambdayz(i)^2;
+energy -1/6 * sum(i : all_atoms) v(i)^2;

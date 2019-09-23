@@ -1,0 +1,359 @@
+* Old
+** TODO Code generator
+ - [X] Write specifications for all target potentials.
+ - [X] Write parser for said specifications (or subset of).
+ - [X] Write simplifier of expressions.
+ - [X] Handle parameters.
+ - [X] Handle loops.
+ - [X] Handle implicits.
+ - [ ] Add typing.
+ - [X] Evaluate cutoff expression in lower context, seeing the iteration variable.
+ - [X] Handle distance.
+ - [X] Handle derivatives.
+ - [X] Exclusion lists.
+ - [X] Half and full neighbor lists: If only half lists requested, only use these, if full lists requested, half them manually
+ - [X] Syntax (loop/if) fusion.
+ - [X] Write LAMMPS integration.
+ - [X] Write an un-SSA step that recombines expression.
+ - [X] Parameters with real arguments (i.e. tabulations or splines).
+** Bookmarks
+ - https://github.com/Functional-AutoDiff/STALINGRAD
+ - https://github.com/plaidml/plaidml/tree/master/tile
+** TODO PotC
+*** Introduce Intermediate Representation
+ - Transfer generation approach
+*** Add Neighbor List Inference
+*** Add EAM-style Communication Inference
+*** Introduce Full Pair Style Generation
+*** Add Optimization Passes
+*** Add Loop Vectorization
+*** Add Caching of Values
+*** Add Filter Steps
+*** Add Intermediate Neighbor Lists
+** Notes 2
+ - soup of nodes vs ssa
+ - functional graph reprs
+*** IR
+ - Information on parameters, neighbor lists, globals etc
+*** Derivator
+*** Optimizer
+ - global value numbering
+ - control flow fusion
+ - loop invariant code motion
+ - vectorizer
+ - PassManager to autogenerate all possible optimizations
+ - answer if poass always adavantageous
+ - benefitting ater pass
+ - introduce functions and temporaries and ordering
+**** IR Extension
+ - for -> accumulate
+ - if -> assign
+ - readparameter
+ - readinput
+ - writeoutput
+ - redatemporary
+ - writetemporary
+ - exchangetemporary
+*** Emitter
+ - needs to lay out params
+ - needs to request neighlists
+ - work mostly here, after completing ir
+**** Styles
+ - kokkos
+ - dl_poly
+ - lammps
+ - libMD
+ - user-omp
+ - namd
+ - gromacs
+ - gpu
+ - user-intel
+** Notes
+ - Choices: MPI Comm, delayed uodate a la reaxff
+ - need: easy integration with external code, plug-in into lammps
+ - want: long-ranged generator, tabulation, interpolation generator
+ - maybe: hook into LLVM
+ - parser for parameter files
+ - user-intel/user-omp/gpu/kokkos targets
+ - arbitrary derivarives for virial calc
+ - input latex "code", maybe with additional annotations
+ - output: pair_whatever cpp
+ - order: lennard-jones, stillinger-weber, (eam , meam) | (tersoff, rebo, airebo, reaxff/comb3, bop?)
+ - calcualte energy
+ - calculate forces
+ - optimize: vectorization (along where), search, tabulation, cachin, ordering by type
+ - instrumentation for guided optimization, introduce if's/continues, loop fusion, cse
+ - reduced neighlists
+ - not just code generator, also interpreter
+ - scopes vectors tensotrs
+ - sums, arithmetic, cos, dcos, sin, dsin: math_cos(x, y, dy)
+ - only first derivatives
+*** nodes/exprs (!: domain limited)
+ + add, sub, mul, div(!), sqrt, cos, exp, sin, pow(!), log(!)
+ - parameter, quantity, constant
+ - angle, torsion(!), distance, delta, pos
+ - totalsum, neighborsum, coordsum
+ - userfunction, spline, table
+ - vector elem, vector construct
+ - labels: orginate from sums, reference in paremter, distance, etc, atomlabel, choordlabel, argumentlabel(?)
+*** types: dmaps, tensors, vectors, scalars, labels
+** More Notes
+ - Replace pow in spline calculation
+ - Allow peratom calculation to occur globally, using half neighbor lists
+   - Needs DeclGlobal and AddGlobal IR instructions
+ - Rewrite based on that style to check if worth it
+ - Needs to consider: Significant speedup from half neigh list
+ - ADP is rather close to EAM
+ - EAM spline need ONETYPE support
+** TODO PotC
+ - [X] Too: Testbench for small, random systems with specified minimum distance (n, xsize, ysize, zsize).
+   - Generate random positions.
+   - Check if any two are too close, randomly remove one of them
+   - Check forces:
+     - If too far apart:
+       - Try remove each atom successively until effect disappears
+       - Persist any atom require, keep removing
+   - Output minimal non-complying thing
+ - [ ] Arc: Split semantical analysis and processing
+ - [X] Bug: tersoff with only f_c, error from elimunused, true
+ - [X] Opt: Eliminate unused
+ - [X] Opt: Detect Duplicates
+ - [X] Opt: Fuse Syntax (adjacent if's and for's)
+ - [X] Bug: Caching relies33 on pointer values being unique -> Caching disabled (revisit)
+ - [X] Bug: Be aware of typing and accordingly augment scalars (e.g. 1/2)
+ - [X] Bug: sqrt(1 - thet^2) in cosine derivative should be sqrt(1 - cos^2)
+ - [X] Bug: Stillinger-Weber loop fusion
+ - [X] Gen: Gather parameters, read parameters, setup neigh lists
+ - [X] Opt: cos(acos(x)) = x etc, 0+x, 1*x, pow(a, 2) = a*a, pow(sqrt(a), 2) = a
+ - [X] Opt: Inline lets that are not reused
+ - [X] Opt: Constant folding
+ - [X] Opt: (-a) * (-b) = a * b, (-a) * b = - (a*b), 
+ - [X] Opt: Same level accumulates to addition
+ - [X] Opt: Analyse accumulators and assigners: If assigned same in each branch, handle accordingly
+ - [X] Bug: Non-conservative forces
+ - [X] Par: Read in spline specifications
+ - [X] Gen: Generate the type_map and type_var_* variables
+ - [X] Der: Have an IR term for type_map lookups
+ - [X] Fea: Type match
+ - [X] Gen: Emit spline evaluation code
+ - [X] Gen: Emit spline reading code
+ - [X] Gen: Emit spline fitting code
+ - [X] Gen: Spline adjustment code: Derivatives etc. Once per dimension
+ - [X] Gen: Make sure stuff is initially zeroed out
+ - [X] Der: Encode spline invocation
+ - [X] Gen: Emit spline invocation code
+ - [X] Gen: Allow splines to be used (would enable REBO)
+ - [X] Der: Torsion-based derivatives (omega)
+ - [X] Val: Write parameter file for REBO
+ - [X] Opt: Loop Invariant Code Motion
+ - [X] Opt: Outline parameter-dependent expressions, reduce to the atom-types they belong
+ - [X] Allow vectorization in trivial (e.g. Tersoff) cases
+ - [ ] Pot: Vashishta
+ - [X] Fea: Allow splines as used with eam (1D, inline)
+ - [ ] Gen: Use analysis for cutoffs and neigh list setup, additional neigh lists
+ - [ ] Opt: Rewrite sqrt(a) * sqrt(a) to a
+ - [X] Der/Gen: Allow per atom quantities (would enable EAM)
+ - [ ] Fea: Allow FFI
+   - function the_sin(x : real) = derivative(ffi(sin, x), ffi(cos, x));
+   - function the_cos(x : real) = derivative(ffi(cos, x), -ffi(sin, x));
+ - [ ] Gen: Allow linking to C functions, would also make e.g. trig functions trivial
+ - [ ] Opt: Code Duplicate Elim for Spline Eval
+ - [ ] Val: Make sure REBO is implemented correctly
+   - Start by with bij=1, then bij=pi_rc, then bij=pi_rc+pij+pji, then bij=pi_rc+pij+pji+pi_dh
+ - [ ] Fea: Splines with integer nodes do not require the same search approach
+ - [ ] Gen: Allow optional per-atom data (e.g. charge, normal)
+ - [X] Bug: Make sure IRIdentifier comparison is correct
+ - [X] Gen: Allow ghost neighbor lists (would enable REBO)
+ - [X] Opt: Simplification of a * x / x
+ - [ ] Opt: x + a - x
+ - [ ] Gen/Der: Proper variable naming
+ - [X] Gen: Allow halving of neighbor lists
+ - [ ] Gen: Handle newton on/off (Pairwise)
+ - [ ] Der: Generate functions that do forward, reverse and both
+ - [ ] Der: Allow max/min, would enable AIREBO
+ - [ ] Gen: Allow tabulated functions to be used (would enable EAM)
+ - [ ] Gen: Allow random functions (would enable DPD), make sure that same random value is used
+   - should be possible easily by erring out when mode != both
+ - [ ] Gen: Allow 2/3-matrices/vectors (would enable Gayberne)
+ - [ ] Allow caching of values
+ - [ ] Allow binning by types
+ - [ ] Opt: Shorten neighbor list first, then reuse that later
+ - [X] Gen: Target Vanilla LAMMPS
+ - [ ] Gen: Target Just-In-Time Vanilla LAMMPS
+ - [X] Gen: Target USER-INTEL LAMMPS
+ - [ ] Gen: Target OpenKIM
+ - [X] Gen: Target KOKKOS
+ - [ ] Gen: Allow just-in-time call to generator (dlopen etc)
+ - [ ] Lol: Unicode support for sums, symbols etc
+ - [ ] Wsh: Targets: LAMMPS, KIM, GULP (?), DL_POLY (?), CP2K
+ - [ ] Gen: Allow for mapped lookup to struct like tersoff
+ - [ ] Opt: Flow analysis of identical values computed in different loops
+ - [ ] Opt: Infer: > 0, >= 0, < 0, <= 0. Allows rewrite of pow(a, b-1) to pow(a, b) / 
+ - [ ] Arc: Merge IR and input lang
+ - [ ] Fea: Check if functions or lets shadow stuff
+ - [ ] Fea: Use static memory allocation if possible
+ - [ ] Fea: propagate zeros through the code.
+ - [X] Fea: Ranges in spline assignments
+ - [ ] Fea: Per-atom virials
+ - [ ] Fea: Charge support
+ - [ ] Fea: Type checking
+ - [ ] Identify potentially useful potential variants
+ - [ ] Generate multithreaded/offloadable implementation for USER-INTEL
+ - [ ] Perform vectorization: Along i, along j, along i and j, each batched or unbatched
+ - [ ] Consider vectorization at lower levels
+ - [ ] Vec: Specialize on number of ntypes: 1, 8/16 (can shuffle), etc.
+ - [ ] Vec: What do nbor_pack_width and three_body_neighbor do?
+ - [ ] Fea: Allow range-based sums
+ - [ ] Fea: Skip lists, i.e. respect ilist and inum
+** Testing
+ - Allow automatic modification of lammps input files
+   - To get a trajectory/initial configuration out
+   - To run using different packages and codes for benchmarking
+ - Allow for test runs: Each timestep, compute error etc
+** <2019-02-14 Do>
+- [X] Zero out peratom initially
+  - Ideally just on loop up to nall. Do not have nall available right now.
+  - Make nall a lookup? then have a corresponding loop?
+- [X] setup comm_forward, comm_reverse in ctor
+- [X] generate packing/unpacking functions
+- [X] add the pointers to the header
+- [X] add the init to the ctor
+- [X] add the enlargement to the compute prologue
+- [X] Allow half trick if: neighbors are symmetric, peratom is a pure sum
+- [X] Pattern match the sum, symmetric if the sum cutoff is constant
+- [X] Make it actually generate ghost and half if only those are needed
+- [X] Make sure things get flipped correctly in the forward pass
+- [X] Make sure the correct two (!) adjoints are used in the reverse pass
+- [X] Investigate why tersoff got slower (ffast-math, probably)
+** <2019-01-23 Mi> 
+- [ ] Add analysis to find peratom, i.e. function x(a : atom) = sum(b: neighbors(...)) foo(a, b)
+- [ ] Mark peratom values somehow, to handle them when they are encountered
+  - [ ] Maybe add a "derivation options" and "derivation result" structure?
+- [ ] To we want to consider multi-dim peratom? I.e. peratom(a: atom; b: atom_type) or peratom(a: atom; b: spatial_direction; c: spatial_direction) symmetric(b, c) = 
+- [X] Add IR bits for communication,
+  - [X] CommunicateGlobalAccIRStmt { direction, variables }
+  - [X] DeclGlobalAccIRStmt { variables }
+  - [X] AccIRStmt
+- [X] Generate code as compute peratom, communicate, compute rest, compute derivatives, communicate, copute peratom derivatives
+- [X] Figure out how this acts together with other optimizations, i.e. how to reorder appropriately
+- [ ] Add support for this kind of structure in intel and kokkos
+** <2019-03-07 Do>
+ - [ ] Only copy over needed files: I.e. src/* MAKE recursively src/Obj_*
+ - [ ] Proper testing/benchmarking for KNL/intel
+ - [X] Proper packing for intel, s.t. single prec works
+   - Either gather_double (easiest), or param<dtype>, or fc.param?
+ - [X] Mixed precision support
+ - [ ] Proper testing/benchmarking for Kokkos
+ - [X] debug s/w
+ - [X] Fix the AVX-512 CD stuff
+ - [ ] Use the more clever CD stuff - i.e. permute first, then only *1* gather/scatter
+** <2019-02-20 Mi> 
+- [X] Handle pure functions appropriately
+- [X] Make Intel vector arch agnostic
+  - Use abstraction library from the airebo effort, should go flawlessly
+  - Open: Casts, Comparisons, Conflict Code, BinOps
+- [ ] Add multi-precision support
+  - Propagate from force accumulation:
+  - If it is accumulated into force or energy, leave it precise
+  - If it is an accumulator that is added to force or energy, leave it precise
+  - If it is any other quantity (including sums) leave it lower precision
+- [ ] Add KIM support
+  - Look at what AIREBO does, what LennardJones / Morse do
+  - Do we need this if LAMMPS is a KIM calculator?
+- [ ] Add caching
+  - ForwardWillReverse, ReverseWithForward
+  - Work iff we know that there is just one level of stuff in between
+  - I.e. if we have hit this Expr with "Both" or (potentially) "Reverse"
+  - Need notion of "short" loops to do this well
+  - Need notion of temp_force to do so...
+    - Is this the same mechanism as I use for loops, but overridable?
+    - I.e. execute for "both", but w/ a different target, then later updating that target?
+- [ ] Refactor the gen phase, getting away from "cb"
+- [ ] Add pair style/jit support
+  - Requires a decent interface definition
+  - i.e. what does lammps do vs what my code does
+- [ ] Figure out how to do hessians
+  - just have a callback that tallies things up
+  - and then have a fix that is invokes there, which manages per-atom hash tables
+  - communicate these hash tables and tally them up
+  - have a file pattern, "outfile.%1$d.%2$d" which is where the hessian gets written to,
+    based on the rank and the timestep 
+- [ ] Make peratom and multiple loop work with intel and kokkos
+  - Just pragma omp for schedule static?
+  - No: Need upper boundary for vectorization
+  - Kokkos: Need setup for comm and shit, as well as detection for reduction vs none.
+  - Effectively, Kokkos needs to only ever have one accumulator "leaving".
+    - Maybe: Push the AccEnergy one level down, and do reduction based on that?
+- [ ] Add deduction for master cutoff
+- [ ] Add global neighbor list support
+- [ ] Add support for more potentials (MEAM (=EAM), Vashishta (=SW), ADP (=EAM))
+- [ ] Add FFI support
+- [ ] Add unit support?
+- [ ] Refactor gen phase
+  - AddMethod() AddClass()
+  - EmitInto()
+- [ ] Particle Energy Support
+  - During der: Mark sums that still have energy units
+    - Summation is fine, multiplication w/ literal is fine (carry along)
+    - Anything else is no bueno.
+    - Assign force accordingly, given the atoms in scope
+- [ ] Particle Virial Support
+  - Needs to occur whenever force is applied (or accumulated)
+  - 
+- [ ] Master Cutoff in potential file?
+- [ ] Be more clever about forward/reverse join
+  - E.g. if we do not perform a force update inside, join forward
+  - If we do perform a force update inside, join backwards
+* Features [1/24]
+- [ ] Vashishta, EDIP, REBO, BOP, AIREBO
+- [ ] More gen styles: openkim, openmm, libmd, dl_poly, user-omp, namd, gromacs, stand-alone, gulp, cp2k
+- [ ] Make sure the generation is correct when having multiple, inter-dependent peratoms
+- [ ] Typing
+- [ ] Caching
+- [ ] Intermediate Neighbor List / Precise Neighbor List
+- [ ] Try other parameter handling (struct and/or single precision packing)
+- [ ] Vectorize other loops, batch loops, compress loops etc
+- [ ] Arbitrary derivatives: Param derivs, higher-order derivs, hessians
+- [ ] Per-Atom virials
+- [ ] Per-Atom energy
+- [ ] Input: Parse LaTeX, or unicode
+- [ ] Deduce Master Cutoff or put into input file
+- [ ] Search expressable, min, max
+- [ ] Testbench: With random configs, and with captures stuff, compute error from ground truth.
+- [ ] More per-atom parameters (normal/charge)
+- [ ] JIT
+- [ ] Allow sums over ranges, parameters over ranges etc
+- [ ] Support skip lists
+** Small [0/21]
+- [ ] Additional Types: Vectors, Tensors, Matrices
+- [ ] Units
+- [ ] User-Defined Per-Atom assignments
+- [ ] Neighbor List Deductions, Master Cutoff in input or parameter file
+- [ ] Interpreter
+- [ ] Improve fusing: Prefer merging non-force with non-force, force with force
+- [ ] Proper mixed precision support
+- [ ] Cheaper test env initialization
+- [ ] Proper testing/benchmarking for KNL/intel and kokkos
+- [ ] More clever CD stuff - permute before scatter
+- [ ] Deduce peratom, needs symmetry info
+- [ ] Multi-Dim peratom (indexed by e.g. type or position)
+- [ ] Inline 1-D spline calculation, including ONETYPE support
+- [ ] x + a - x -> a
+- [ ] Emit functions, do not inline everything
+- [ ] Random functions (only work with kBoth...)
+- [ ] Infer range of certain values (i.e. in particular "positive" and "strictly positive"), or assert at certain points
+- [ ] Merge IR and input lang
+- [ ] Refactor gen or parser
+- [ ] Propagate zero when optimizing (i.e. add more if (x == 0) where appropriate)
+- [ ] Offload support w/ USER-INTEL
+- [ ] Specialize on ntypes when vectorizing (1, 2 (bit-sets etc), VL (permutes etc))
+- [ ] What does nbor_pack_width do? three_body_neighbor->enables numneighhalf when full
+** Bonus
+- [ ] Torque
+- [ ] FFI as a parameter kind?
+** Done
+- [X] FFI
+* Make EIM work
+* Make EAM/EIM/ADP work with USER-INTEL,
+* Measure vector speed
+* Optimize post-accumulator fusion

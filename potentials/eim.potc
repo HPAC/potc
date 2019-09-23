@@ -1,0 +1,16 @@
+parameter cutoff(i: atom_type; j: atom_type) = file(1);
+parameter grid_size = file(1);
+parameter nu(i : atom_type; j : atom_type; r : distance) =
+    spline_grid(nu, 3, 0, grid_size, 3);
+parameter psi(i : atom_type; j: atom_type; r : real) =
+    spline_grid(rho, 3, 0, grid_size, 1);
+parameter phi(i : atom_type; j : atom_type; r : distance) = 
+    spline_grid(phi, 3, 0, grid_size, 3);
+
+peratom q(i: atom) = sum(j: neighbors(i, cutoff(i, j))) nu(i, j, r(i, j));
+peratom sigma(i: atom) = sum(j: neighbors(i, cutoff(i, j))) q(j) * psi(i, j, r(i, j));
+
+function E(i: atom) = 1/2 * q(i) * sigma(i);
+
+energy sum(i : all_atoms) E(i);
+energy sum(i : all_atoms) sum(j : neighbors_half(i, cutoff(i, j))) phi(i, j, r(i, j));

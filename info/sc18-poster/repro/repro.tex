@@ -1,0 +1,167 @@
+\documentclass[sigconf]{acmart}
+
+\usepackage{hyperref}
+
+\setcopyright{none}
+
+%Conference
+\acmConference[ACM SRC/SC18]{ACM Student Research Competition at SC17}{November 2018}{Dallas, Texas USA}
+\acmYear{2018}
+
+\begin{document}
+\title{PotC: Many-body potential implementations \`a la carte}
+\subtitle{Reproducability Description Appendix}
+
+\author{Markus H\"ohnerbach}
+\affiliation{%
+  \institution{RWTH Aachen University}
+}
+\email{hoehnerbach@aices.rwth-aachen.de}
+
+\author{Paolo Bientinesi}
+\authornote{Advisor}
+\affiliation{%
+  \institution{RWTH Aachen University}
+}
+\email{pauldj@aices.rwth-aachen.de}
+
+\renewcommand{\shortauthors}{M. H\"ohnerbach et al.}
+
+\maketitle
+
+\section{Abstract}
+
+The poster contains computational results from the execution of generated potentials.
+We provide the generated files online, as well as the benchmark input files and parameter sets.
+LAMMPS itself is open-source software, and can easily be obtained.
+The experimental runs were performed on a 2nd generation Xeon Phi system.
+
+\section{Description}
+
+\subsection{Check-list (artifact meta information)}
+
+{\small
+\begin{itemize}
+  \item {\bf Algorithm: Molecular Dynamics/Tersoff+Stillinger-Weber}
+  \item {\bf Program: LAMMPS}
+  \item {\bf Compilation: \verb+make intel_serial+, ICC 18 (w/ GCC 7 stdlib)}
+  \item {\bf Binary: \verb+lmp_intel_serial+}
+  \item {\bf Data set: LAMMPS benchmarks sw and tersoff}
+  \item {\bf Run-time environment: ICC 18/GCC 7}
+  \item {\bf Hardware: Xeon Phi 7210}
+  \item {\bf Publicly available?: Yes}
+\end{itemize}
+}
+
+\subsection{How software can be obtained (if available)}
+
+LAMMPS is available at \url{http://lammps.sandia.gov/}. We are using version 16Mar18.
+The generated output files from our generator are available at \url{https://github.com/v0i0/poster-gen-pot}.
+The repository also contains the Makefile, input and parameter files.
+
+\subsection{Hardware dependencies}
+
+The benchmark runs were performed on a Intel Xeon Phi 7210 system.
+
+\subsection{Software dependencies}
+
+The code was compiled using icc (ICC) 18.0.3 20180410 with the standard library of GCC 7.2.0.
+While LAMMPS would usually also depend on MPI, we opted to build a serial version of the code to reduce dependencies.
+
+\subsection{Datasets}
+
+The code uses the benchmarks provided with LAMMPS.
+These perform a simulation of 32000 atoms of crystalline Silicon for 100 timesteps, in both the Tersoff and Stillinger-Weber case.
+The input files are provided in our repository.
+
+\section{Installation}
+
+\begin{enumerate}
+\item Download the LAMMPS tarball and extract it.
+\item Copy \verb+Makefile.intel_serial+ into\\\verb+lammps-16Mar18/src/MAKE+.
+\item Copy \verb+pair_*_gen*+ into \verb+lammps-16Mar18/src+.
+\item Change directory into \verb+lammps-16Mar18/src+.
+\item Execute \verb+(cd STUBS; make)+.
+\item Execute \verb+make intel_serial+.
+\item This produces a binary called \verb+lmp_intel_serial+.
+\end{enumerate}
+
+\section{Experiment workflow}
+
+Change into the directory where you cloned \url{https://github.com/v0i0/poster-gen-pot}.
+It contains the input files of the form\\\verb+{sw,tersoff}.in[.ref]+.
+Let \verb+$BIN+ be the path to the binary from the installation step.
+An input file can be executed using:
+\begin{verbatim}
+$BIN -in <input-file>
+\end{verbatim}
+
+There are three dimensions along which we can obtain results:
+
+\begin{enumerate}
+\item To choose between Stillinger-Weber or for Tersoff, choose corresponding input file prefix (either ``sw'' or ``tersoff'').
+\item To choose between the generated and handwritten code, choose the input file without suffix for generated, and the one with the ``.ref'' suffix for handwritten code.
+\item To choose between vectorized and non-vectorized code, add \verb+-pk intel 0 mode double -sf intel+ as command line options to enable vectorized execution, and add not options for non-vectorized execution.
+\end{enumerate}
+
+The relevant information in the output are (1) the lines starting with ``0'' and ``100'' and (2) the line tyhat starts with ``Loop''.
+The outputs (1) contain data from the simulation and should match up for each potential.
+The output (2) contains the runtime of the simulation that was not spent on set-up, and is the time we display in our plot.
+
+For the reader's convenience, the following command line will run all the input files and extract the relevant data:
+
+\begin{verbatim}
+for i in sw.in sw.in.ref tersoff.in tersoff.in.ref;
+do
+  echo $i;
+  $BIN -in $i -pk intel 0 mode double -sf intel | 
+    grep '100\|Loop';
+  $BIN -in $i | grep '100\|Loop';
+done
+\end{verbatim}
+
+\clearpage
+\section{Evaluation and expected result}
+
+That command line should output the following text (with slight deviation in terms of the ``Loop time'', but none in the simulation data lines).
+
+\begin{verbatim}
+sw.in
+  max neighbors/atom: 2000, page size: 100000
+       0         1000    -138771.2            0      -134635    6866.6499 
+     100    508.80533   -136736.12            0    -134631.6    6361.7858 
+Loop time of 35.8894 on 1 procs for 100 steps with 32000 atoms
+  max neighbors/atom: 2000, page size: 100000
+       0         1000    -138771.2            0      -134635    6866.6499 
+     100    508.80533   -136736.12            0    -134631.6    6361.7858 
+Loop time of 38.5878 on 1 procs for 100 steps with 32000 atoms
+sw.in.ref
+  max neighbors/atom: 2000, page size: 100000
+       0         1000    -138771.2            0      -134635    6866.6486 
+     100    508.80533   -136736.12            0    -134631.6    6361.7856 
+Loop time of 3.11945 on 1 procs for 100 steps with 32000 atoms
+  max neighbors/atom: 2000, page size: 100000
+       0         1000    -138771.2            0      -134635    6866.6499 
+     100    508.80533   -136736.12            0    -134631.6    6361.7858 
+Loop time of 21.1647 on 1 procs for 100 steps with 32000 atoms
+tersoff.in
+  max neighbors/atom: 2000, page size: 100000
+       0         1000   -148173.19            0   -144036.99    7019.4434 
+     100    429.24901    -145810.1            0   -144034.64   -14610.887 
+Loop time of 13.0774 on 1 procs for 100 steps with 32000 atoms
+  max neighbors/atom: 2000, page size: 100000
+       0         1000   -148173.19            0   -144036.99    7019.4434 
+     100    429.24901    -145810.1            0   -144034.64   -14610.887 
+Loop time of 32.3869 on 1 procs for 100 steps with 32000 atoms
+tersoff.in.ref
+  max neighbors/atom: 2000, page size: 100000
+       0         1000   -148173.19            0   -144036.99    7019.4434 
+     100    429.24901    -145810.1            0   -144034.64   -14610.887 
+Loop time of 9.61098 on 1 procs for 100 steps with 32000 atoms
+  max neighbors/atom: 2000, page size: 100000
+       0         1000   -148173.19            0   -144036.99    7019.4434 
+     100    429.24901    -145810.1            0   -144034.64   -14610.887 
+Loop time of 30.3192 on 1 procs for 100 steps with 32000 atoms
+\end{verbatim}
+
+\end{document}

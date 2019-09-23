@@ -1,0 +1,151 @@
+parameter r_min(i: atom_type; j: atom_type) = file(1);
+parameter r_max(i: atom_type; j: atom_type) = file(2);
+parameter Q(i: atom_type; j: atom_type) = file(3);
+parameter A(i: atom_type; j: atom_type) = file(4);
+parameter alpha(i: atom_type; j: atom_type) = file(5);
+
+parameter B_1(i: atom_type; j: atom_type) = file(6);
+parameter B_2(i: atom_type; j: atom_type) = file(7);
+parameter B_3(i: atom_type; j: atom_type) = file(8);
+parameter beta_1(i: atom_type; j: atom_type) = file(9);
+parameter beta_2(i: atom_type; j: atom_type) = file(10);
+parameter beta_3(i: atom_type; j: atom_type) = file(11);
+
+parameter rho_HH = file(1);
+parameter rho_CC = file(2);
+parameter rho_CH = file(3);
+parameter N_conj_min = file(4);
+parameter N_conj_max = file(5);
+parameter N_min = file(6);
+parameter N_max = file(7);
+parameter thmin = file(8);
+parameter thmax = file(9);
+
+parameter g_C1(cos : real) = spline(g_C1, 5, 1, 1 1);
+parameter g_C2(cos : real) = spline(g_C2, 5, 1, 1 1);
+parameter g_H(cos : real) = spline(g_H, 5, 1, 1 1);
+
+parameter P_CC(NC : real; NH : real) = spline_integer(P_CC, 3);
+parameter P_CH(NC : real; NH : real) = spline_integer(P_CH, 3);
+
+parameter pi_rc_CC(Nij : real; Nji : real; Nconj : real) = spline_integer(pi_rc_CC, 3, 1, 2, 3);
+parameter pi_rc_CH(Nij : real; Nji : real; Nconj : real) = spline_integer(pi_rc_CH, 3);
+parameter pi_rc_HH(Nij : real; Nji : real; Nconj : real) = spline_integer(pi_rc_HH, 3);
+
+parameter T_ij(Nij : real; Nji : real; Nconj : real) = spline_integer(T_ij, 3);
+
+function P(i: atom; j: atom) = typematch(i, j;
+   C, C: P_CC(N_C(i, j), N_H(i, j));
+   C, H: P_CH(N_C(i, j), N_H(i, j)); 
+   H, C: 0;
+   H, H: 0);
+
+peratom NN_C(i: atom) = sum(k: neighbors(i, r_max(i, k))) delta_C(k) * w(i, k, r(i, k));
+peratom NN_H(i: atom) = sum(k: neighbors(i, r_max(i, k))) delta_H(k) * w(i, k, r(i, k));
+
+function N_C(i: atom; j: atom) = NN_C(i) - delta_C(j) * w(i, j, r(i, j));
+function N_H(i: atom; j: atom) = NN_H(i) - delta_H(j) * w(i, j, r(i, j));
+
+function N(i: atom; j: atom) = N_C(i, j) + N_H(i, j);
+
+function t_conj(N: real) = (N - N_min) / (N_max - N_min);
+
+function Nconj(i: atom; j: atom) = 1 +
+  (sum(k: neighbors(i, r_max(i, k), j)) delta_C(k) * w(i, k, r(i, k)) * Sp(t_conj(N(k, i))))^2 +
+  (sum(l: neighbors(j, r_max(j, l), i)) delta_C(l) * w(j, l, r(j, l)) * Sp(t_conj(N(l, j))))^2;
+
+function pi_rc(i: atom; j: atom) =
+  let(Nij: N(i, j)) let(Nji: N(j, i)) let(Nconjij: Nconj(i, j))
+  typematch(i, j;
+    C, C: pi_rc_CC(Nij, Nji, Nconjij);
+    C, H: pi_rc_CH(Nij, Nji, Nconjij);
+    H, H: pi_rc_HH(Nij, Nji, Nconjij);
+    H, C: pi_rc_CH(Nij, Nji, Nconjij));
+
+function t_N(i: atom_type; j: atom_type; N: real) = implicit(i: i; j: j) (N - N_conj_min) / (N_conj_max - N_conj_min);
+
+function g(i: atom_type; j: atom_type; Nij: real; cos_theta: real) = typematch(i;
+   C: g_C2(cos_theta) + Sp(t_N(i, j, Nij)) * (g_C1(cos_theta) - g_C2(cos_theta)); 
+   H: g_H(cos_theta));
+
+function lambda(j : atom; i : atom; k : atom) = 4 * delta_H(i) * (
+   (delta_H(k) * rho_HH + delta_C(k) * rho_CH - r(i, k)) - 
+   (delta_H(j) * rho_HH + delta_C(j) * rho_CH - r(i, j)) );
+
+function p_sigma_pi(i: atom; j: atom) = 
+  (1 + (sum(k: neighbors(i, r_max(i, k), j))
+                   w(i, k, r(i, k)) * g(i, j, N(i, j), cos(theta(j, i, k))) * 
+                   exp(lambda(j, i, k))) + P(i, j)) ^ (-1 / 2);
+
+function cross_x(ax: real; ay: real; az: real; bx: real; by: real; bz: real) =
+  ay * bz - az * by;
+function cross_y(ax: real; ay: real; az: real; bx: real; by: real; bz: real) =
+  az * bx - ax * bz;
+function cross_z(ax: real; ay: real; az: real; bx: real; by: real; bz: real) =
+  ax * by - ay * bx;
+function cos_omega(i: atom; j: atom; k: atom; l: atom) =
+    let(dx1: _px(i) - _px(j)) 
+    let(dy1: _py(i) - _py(j)) 
+    let(dz1: _pz(i) - _pz(j))
+    let(dx2: _px(i) - _px(k)) 
+    let(dy2: _py(i) - _py(k)) 
+    let(dz2: _pz(i) - _pz(k))
+    let(dx3: _px(j) - _px(i)) 
+    let(dy3: _py(j) - _py(i)) 
+    let(dz3: _pz(j) - _pz(i))
+    let(dx4: _px(j) - _px(k)) 
+    let(dy4: _py(j) - _py(k)) 
+    let(dz4: _pz(j) - _pz(k))
+    let(ekx: cross_x(dx1, dy1, dz1, dx2, dy2, dz2))
+    let(eky: cross_y(dx1, dy1, dz1, dx2, dy2, dz2))
+    let(ekz: cross_z(dx1, dy1, dz1, dx2, dy2, dz2))
+    let(elx: cross_x(dx3, dy3, dz3, dx4, dy4, dz4))
+    let(ely: cross_y(dx3, dy3, dz3, dx4, dy4, dz4))
+    let(elz: cross_z(dx3, dy3, dz3, dx4, dy4, dz4))
+    let(rek: sqrt(ekx^2 + eky^2 + ekz^2))
+    let(rel: sqrt(elx^2 + ely^2 + elz^2))
+    (ekx * elx + eky * ely + ekz * elz) / (rek * rel);
+
+function Sp2(x: real; lo: real; hi: real) =
+  let(t: (x - lo) / (hi - lo))
+  piecewise(
+    t <= 0: 1;
+    0 < t < 1: 1 - t*t * (3 - 2*t);
+    t >= 1: 0);
+
+function sum_omega(i: atom; j: atom) =
+  sum(k: neighbors(i, r_max(i, k), j))
+  sum(l: neighbors(j, r_max(j, k), i))
+  w(i, k, r(i, k)) * w(j, l, r(j, l)) * (1 - cos_omega(k, i, j, l)^2) *
+  Sp2(cos(theta(k, i, j)), thmin, thmax) * 
+  Sp2(cos(theta(i, j, l)), thmin, thmax);
+
+function pi_dh(i: atom; j: atom) =
+  let(Nij: N(i, j)) let(Nji: N(j, i)) let(Nconjij: Nconj(i, j))
+  typematch(i, j;
+    C, C: T_ij(Nij, Nji, Nconjij) * sum_omega(i, j);
+    C, H: 0;
+    H, H: 0;
+    H, C: 0);
+
+function b(i: atom; j: atom) = 1 / 2 * (p_sigma_pi(i, j) + p_sigma_pi(j, i)) + pi_rc(i, j) + pi_dh(i, j);
+
+function step(x: real) = piecewise(x <= 0: 0; x > 0: 1);
+function delta_H(i: atom) = typematch(i; C: 0; H: 1);
+function delta_C(i: atom) = typematch(i; C: 1; H: 0);
+
+function Sp(t: real) = piecewise(
+  t <= 0: 1;
+  0 < t < 1: 1/2 * (1 + cos(pi * t));
+  t >= 1: 0);
+function t_c(i : atom_type; j : atom_type; r : distance) = implicit(i : i; j : j) (r - r_min) / (r_max - r_min);
+function w(i: atom_type; j: atom_type; r: distance) = implicit(i: i; j: j) Sp(t_c(r));
+
+function V_R(i: atom; j: atom) = implicit(i: i; j: j) w(r) * (1 + Q / r) * A * exp(-alpha * r);
+function V_A(i: atom; j: atom) = implicit(i: i; j: j) -w(r) * (
+   B_1 * exp(-beta_1 * r) +
+   B_2 * exp(-beta_2 * r) +
+   B_3 * exp(-beta_3 * r));
+
+function E_REBO(i : atom; j : atom) = V_R(i, j) + V_A(i, j) * b(i, j);
+energy sum(i : all_atoms) sum(j : neighbors_half(i, r_max(i, j))) E_REBO(i, j);

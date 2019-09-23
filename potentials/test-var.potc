@@ -1,0 +1,2 @@
+parameter a(i: atom_type; j: atom_type) = file(1);
+energy sum(i: all_atoms) sum(j: neighbors(i, 5)) r(i, j);

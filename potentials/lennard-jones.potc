@@ -1,0 +1,4 @@
+parameter r_C(i : atom_type; j : atom_type) = file(1);
+parameter sigma(i : atom_type; j : atom_type) = file(2);
+parameter epsilon(i : atom_type; j : atom_type) = file(3);
+energy sum(i: all_atoms) sum(j: neighbors_half(i, r_C(i, j))) implicit(i: i; j: j) let(rinv: 1 / r^2) 4 * epsilon * sigma^12 * rinv^6 - 4 * epsilon * sigma^6 * rinv^3;

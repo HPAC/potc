@@ -1,0 +1,365 @@
+\begin{frame}[fragile]{}
+\begin{tikzpicture}[remember picture,overlay]
+%\draw[draw=rwthlightgray] (0, 0) grid (110.08cm, -60cm);
+\end{tikzpicture}
+%
+\vspace*{-0.5cm}%
+\begin{columns}[onlytextwidth]%
+%
+\begin{column}{26.02cm}%
+\begin{tikzpicture}[remember picture, overlay]
+\foreach \i in {0,3} {
+\fill[rwthlightgray] ({28.02cm*\i}, -.1ex) rectangle +(26.02cm, -62cm);
+%\draw[rwth100blue] ({28.02cm*\i}, -.1ex) rectangle +(26.02cm, -62cm);
+}
+\foreach \i in {1} {
+\fill[rwthlightgray] ({28.02cm*\i}, -25cm+.3ex) rectangle +(26.02cm, -37cm-.4ex);
+%\draw[rwth100blue] ({28.02cm*\i}, -22cm+.3ex) rectangle +(26.02cm, -40cm-.4ex);
+}
+\foreach \i in {2} {
+\fill[rwthlightgray] ({28.02cm*\i}, -35cm+.7ex) rectangle +(26.02cm, -27cm-.8ex);
+%\draw[rwth100blue] ({28.02cm*\i}, -35cm+.7ex) rectangle +(26.02cm, -27cm-.8ex);
+}
+\end{tikzpicture}%
+%
+\begin{block}{Molecular Dynamics (MD)}%
+Molecular dynamics potentials specify how atoms attract and repulse each other and account for the majority of the simulation runtime.
+They are given as functions of all atom positions:
+\hfill $V(\mathbf{x}_1, \dots, \mathbf{x}_N)$.\\
+And forces can be derived using
+\hfill $\mathbf{F}_i = -\nabla_{\mathbf{x}_i} V$.\\
+Simplest and most popular potential (pairwise) depends on distance:
+$$V=\sum_i\sum_{j, r_{ij} < r_c} f(r_{ij})$$
+
+Many-body potentials are required to model some materials, and depend on more than just distance:
+
+\begin{center}%
+\begin{tikzpicture}
+%\draw[rwthlightgray] (0, 0) grid (26, 10);
+%\clip (0, 0) rectangle (26, 10);
+\node[circle, minimum size=2.0cm] (k) at (3, 7) {k};
+\node[circle, minimum size=2.0cm] (i) at (9, 3) {i};
+\node[circle, minimum size=2.0cm] (j) at (17, 7) {j};
+\node[circle, minimum size=2.0cm] (l) at (23, 3) {l};
+\draw[draw=rwthgreen, line width=5pt] (j) -- (l);
+\draw[draw=rwthturquoise, line width=5pt] (k) -- (i);
+\pic ["$\theta_{ijl}$", line width=5pt, draw=rwthmagenta, ->, angle radius=2cm, angle eccentricity=1.5] {angle =  i--j--l};
+\pic ["$\theta_{jik}$", line width=5pt, draw=rwthmaygreen, ->, angle radius=2cm, angle eccentricity=1.5] {angle =  j--i--k};
+\draw[draw=rwthpetrol, line width=5pt] (i) -- (j);
+\draw[draw=rwthorange, line width=5pt, ->] ($ (i)!0.5!(j) $) circle (1.2cm);
+\draw[draw=rwthorange, line width=5pt, ->] ($ (i)!0.5!(j) + (90:1.2cm) $) -- ($ (i)!0.5!(j) + (95:1.2cm) $);
+\node at ($ (i)!0.5!(j) + (0, 2cm) $) {$\omega_{kijl}$} ;
+\draw[draw=rwthpetrol, line width=5pt] ($(i)!0.5!(j)$) -- (j);
+%\draw[draw=rwthmaygreen, line width=5pt] ($ (k) + (0, 10pt) $) -- ($ (i) + (0, 10pt) $) -- ($ (j) + (0, 10pt) $);
+%\draw[draw=rwthorange, line width=5pt] ($ (i) + (0, -10pt) $) -- ($ (j) + (0, -10pt) $) -- ($ (l) + (0, -10pt) $);
+
+
+\node[circle, line width=3pt, draw=rwthred, fill=white, minimum size=2.0cm] (k) at (3, 7) {k};
+\node[circle, line width=3pt, draw=rwthbordeauxred, fill=white, minimum size=2.0cm] (i) at (9, 3) {i};
+\node[circle, line width=3pt, draw=rwthviolet, fill=white, minimum size=2.0cm] (j) at (17, 7) {j};
+\node[circle, line width=3pt, draw=rwthpurple, fill=white, minimum size=2.0cm] (l) at (23, 3) {l};
+\end{tikzpicture}%
+\end{center}%
+The compiler is particularly intended for these potentials, since implementing them goes beyond taking the derivative of a scalar function.
+\end{block}%
+%
+%
+\begin{block}{Selected Potentials from LAMMPS}
+\begin{center}
+\begin{tabular}{llll}
+\bfseries Name &\bfseries  LOC-R &\bfseries  LOC-O &\bfseries  Structure\\
+LJ & 640 & +480 & {\small $\sum_i\sum_j f(i, j)$}\\
+Stillinger-Weber & 600 & +1250 & {\small $\sum_i\sum_j\sum_k f(i,j,k)$}\\
+EAM & 840 & +820 & {\small $\sum_i f(i, \sum_j g(i, j))$}\\
+Tersoff & 800 & +1450 & {\small $\sum_i\sum_j f(i, j, \sum_k g(i, j, k)$}\\
+MEAM & 890 & \ding{55}  & {\small $\sum_i f(i, \sum_j g(i, j))$}\\
+ADP & 940  & \ding{55}  & too complex to show\\
+BOP & 5950 & \ding{55}  & too complex to show\\
+(AI)REBO & 4240 & +4550 & too complex to show\\
+COMB3 & 3560   & \ding{55} & too complex to show\\
+ReaxFF & 10880 & \ding{55} & too complex to show
+\end{tabular}
+\end{center}
+LOC-R: Lines of code of the regular code.\\
+LOC-O: Extra LOC in the optimized/vectorized code.
+\end{block}%
+\begin{block}{Motivation}%
+%
+Many-body potentials are complex to implement, and require large effort to optimize.
+Less popular potentials will likely never be optimized manually.
+
+
+And even if there is an implementation, it can be hard to assure that it is correct.
+
+
+To tackle these issues, this work introduces a Domain Specific Language for molecular dynamics potentials and a corresponding compiler to derive high performance implementations.
+
+\end{block}%
+%
+\end{column}%
+%
+\begin{column}{2cm}%
+\end{column}%
+%
+\begin{column}{26.02cm}%
+%
+%
+%\begin{center}%
+%\vspace{-1.5cm}%
+%\begin{tikzpicture}
+%\draw[white] (0, 0) grid (54.04cm, 30cm-.7ex);
+%\end{tikzpicture}
+%\end{center}%
+%
+
+\begin{block}{Example: The Tersoff Potential}
+
+\vspace*{-0.5cm}
+
+\begin{align*}
+V &= \sum_i\sum_j f_C(r_{ij}) [ f_R(r_{ij}) + b_{ij} f_A(r_{ij}) ]\\
+f_C(r) &= \begin{cases}
+  0, & r < R - D\\
+  \frac{1}{2} - \frac{1}{2}\sin(\frac{\pi}{2} (r - R) / D), & R - D < r < R + D\\
+  1 & r > R + D
+\end{cases}\\
+f_R(r) &= A\exp(-\lambda_1 r)\\
+f_A(r) &= -B\exp(-\lambda_2 r)\\
+b_{ij} &= (1 + \beta^n\zeta_{ij}^n)^{1/(2n)}\\
+\zeta_{ij} &= \sum_k f_C(r_{ik}) g(\theta_{jik}) \exp(\lambda_3^m (r_{ij} - r_{ik})^m)\\
+g(\theta) &= \gamma (1 + c^2/d^2 - c^2/(d^2 + (\cos(\theta) - \cos(\theta_0))^2))\\
+\end{align*}
+
+
+Parameters: $R$, $D$, $A$, $\lambda_1$, $B$, $\lambda_2$, $\beta$, $n$, $\lambda_3$, $m$, $\gamma$, $c$, $d$, $\theta_0$.
+
+\vspace*{1cm}
+
+\end{block}
+
+\begin{block}{Challenges}%
+\begin{minipage}{24.02cm}
+%\vspace*{.5em}
+\begin{itemize}
+\item Picking a vectorization strategy suitable to the neighbor list lengths.
+\item Reducing the amount of recalculation for the force computation.
+\item Introducing reduced accuracy modes.
+\item Applying a number of vectorization idioms.
+\item Performing optimizations that normal compilers can not apply as they lack MD-specific knowledge.
+\end{itemize}
+\end{minipage}
+\end{block}%
+\begin{block}{Approach}%
+%
+\vspace{-0.5cm}
+\begin{center}
+\begin{tikzpicture}
+%\draw (-13, 18) rectangle (13, 0);
+\node (a) at (0, 19) {};
+\node[text width=20cm, align=center, fill=rwthpetrol,   rectangle, text=white] (b) at (0, 16) {1. Parse Input DSL\rule[-0.2\baselineskip]{0pt}{1\baselineskip}};
+\node[text width=20cm, align=center, fill=rwthmaygreen, rectangle] (c) at (0, 12) {2. Force Derivation\rule[-0.2\baselineskip]{0pt}{1\baselineskip}};
+\node[text width=20cm, align=center, fill=rwthmagenta,  rectangle, text=white] (d) at (0, 8) {3. Optimization\rule[-0.2\baselineskip]{0pt}{1\baselineskip}};
+\node[text width=20cm, align=center, fill=rwthorange,   rectangle] (e) at (0, 4) {4. Code Generation\rule[-0.2\baselineskip]{0pt}{1\baselineskip}};
+\node (f) at (0, 0) {};
+\draw[-{Latex[length=5mm]}] (a) -- (b) node[right, pos=0.5] {Input text};
+\draw[-{Latex[length=5mm]}] (b) -- (c) node[right, pos=0.5] {Functional repr.};
+\draw[-{Latex[length=5mm]}] (c) -- (d) node[right, pos=0.5] {Imperative repr.};
+\draw[-{Latex[length=5mm]}] (d) -- (e) node[right, pos=0.5] {Imperative repr.};
+\draw[-{Latex[length=5mm]}] (e) -- (f) node[right, pos=0.5, text width=10cm] {Output text, including ``bookkeeping''};
+\end{tikzpicture}
+\end{center}
+\end{block}%
+%
+\end{column}%
+%
+\begin{column}{2cm}%
+\end{column}%
+%
+\begin{column}{26.02cm}%
+%
+%\vspace*{30cm}%
+\setbeamercolor{block title}{bg=rwthpetrol,fg=white}
+\begin{block}{DSL for Tersoff Potential}%
+%
+\vspace{-0.5cm}%
+\begin{lstlisting}[language=potc, basicstyle=\small\ttfamily]
+energy 1 / 2 * sum(i : all_atoms)
+ sum(j : neighbors(i, R(i, j, j) + D(i, j, j)))
+  V(i, j);
+function V(i : atom; j : atom) = 
+ f_C(i, j, r(i, j)) * 
+ (f_R(i, j, r(i, j)) + 
+  b(i, j) * f_A(i, j, r(i, j)));
+function f_C(i : atom_type; j : atom_type;
+             k : atom_type; r : distance) = 
+ implicit(i : i; j : j; k : k)
+  piecewise(
+   r <= R - D : 1; 
+   R - D < r < R + D : 
+    1 / 2 - 1 / 2 * sin(pi / 2 * (r - R) / D); 
+   r >= R + D : 0);
+# ...
+function b(i : atom; j : atom) =
+ (1 + beta(i, j) ^ n(i, j) * 
+  zeta(i, j) ^ n(i, j)) ^ (-1 / (2 * n(i, j)));
+function zeta(i : atom; j : atom) =
+ sum(k : neighbors(i, R(i, j, k) + D(i, j, k), j))
+  implicit(i : i; j : j; k : k)
+   f_C(r(i, k)) * g(theta(j, i, k)) * 
+   exp(lambda_3 ^ m * (r(i, j) - r(i, k)) ^ m);
+
+parameter A(i : atom_type; j : atom_type) = file(1);
+# ...
+parameter gamma(i : atom_type; j : atom_type;
+                k : atom_type) = file(5);
+# Total: ~ 30 LOC, while LAMMPS impl > 500 LOC
+\end{lstlisting}
+
+\end{block}
+%
+\setbeamercolor{block title}{bg=rwthmaygreen,fg=black}
+\begin{block}{Force Derivation}%
+There is one variable (the potential energy) that we want to take many derivatives of.
+
+An adjoint-based approach makes this calculation very straightforward, essentially ``interpreting`` the functional representation and emitting the corresponding code.
+\end{block}%
+%
+\setbeamercolor{block title}{bg=rwthmagenta,fg=white}
+\begin{block}{Optimization}%
+%
+\vspace*{-0.5cm}%
+\begin{itemize}
+\item Inlining
+\item Loop/Conditional Fusion
+\item Dead Code Elimination
+\item Common Subexpression Elimination
+\item Arithmetic Improvements (e.g Constant Folding)
+\item Loop Invariant Code Motion
+\item Vectorization (partial)
+\color{magenta}
+\item Check for 0
+\item Caching
+\item Batching
+\item Accuracy
+\end{itemize}
+
+\end{block}
+\end{column}%
+%
+\begin{column}{2cm}%
+\end{column}%
+%
+\begin{column}{26.02cm}%
+%
+\setbeamercolor{block title}{bg=rwthorange,fg=black}
+\begin{block}{Code Generation for LAMMPS}%
+For now, the compiler generates source code that can be compiled into LAMMPS.
+LAMMPS is a popular, extensible, open-source, highly scalable molecular dynamics code developed by Sandia National Labs.
+It contains implementations for a number of many-body potentials, in various implementation variants (threaded, vectorized, GPU, \dots).
+In addition LAMMPS provides benchmarks for all its potentials, which can be used to evaluate our results.
+\end{block}%
+\setbeamercolor{block title}{bg=rwthdarkblue,fg=white}
+\begin{block}{Performance}%
+\begin{center}
+\pgfplotsset{compat=1.11,
+    /pgfplots/ybar legend/.style={
+    /pgfplots/legend image code/.code={%
+       \fill[##1,/tikz/.cd,yshift=-0.25em]
+        (0cm,0cm) rectangle (0.4em,0.8em);},
+   },
+}
+\begin{tikzpicture}
+\draw[rwthlightgray] (0, 0) grid (25, 10);
+\node (t) at (6.5, 5.0) {};
+\node (s) at (18.5, 5.0) {};
+\begin{axis}[legend cell align=left,
+    legend pos=north east,
+    legend style={draw=none},
+    ylabel={Time (s)},
+    label style={font=\footnotesize},
+    tick label style={font=\tiny},
+    x tick label style={font=\small},
+    y label style={at={(axis description cs:-0.08,.5)},anchor=south},
+    axis background/.style={fill=white},
+    legend style={fill=none},
+    ybar, bar width=30pt,
+    enlarge x limits=1.2,
+    ymin=0,
+    symbolic x coords={Hand, Gen},
+    xtick={Hand, Gen},
+    title={Tersoff\rule[-0.2\baselineskip]{0pt}{1\baselineskip}},
+    at={(t)}, anchor=center,
+    height=8.5cm, width=11cm
+]
+\addplot[draw=none, fill=rwthdarkblue] coordinates { (Hand, 30.2) (Gen, 24.8) };
+\addplot[draw=none, fill=rwthmagenta]  coordinates { (Hand, 9.5) (Gen, 5.5) };
+\legend{ Reg, Vec }
+\end{axis}
+
+\begin{axis}[legend cell align=left,
+    legend pos=north east,
+    legend style={draw=none},
+    ylabel={Time (s)},
+    label style={font=\footnotesize},
+    tick label style={font=\tiny},
+    x tick label style={font=\small},
+    y label style={at={(axis description cs:-0.08,.5)},anchor=south},
+    axis background/.style={fill=white},
+    legend style={fill=none},
+    ybar, bar width=30pt,
+    enlarge x limits=1.2,
+    ymin=0,
+    symbolic x coords={Hand, Gen},
+    xtick={Hand, Gen},
+    title={Stillinger-Weber},
+    at={(s)}, anchor=center,
+    height=8.5cm, width=11cm
+]
+\addplot[draw=none, fill=rwthdarkblue] coordinates { (Hand, 20.9) (Gen, 18.9) };
+\addplot[draw=none, fill=rwthmagenta]  coordinates { (Hand, 3.1) (Gen, 9.3) };
+\legend{ Reg, Vec }
+\end{axis}
+\pgfresetboundingbox
+\path [use as bounding box] (0, 0) rectangle (25, 10);
+\end{tikzpicture}
+\small KNL, double precision, single core.
+\vspace*{-0.5em}
+\end{center}
+\end{block}%
+\begin{block}{Future Work}%
+\begin{minipage}{24.02cm}
+\begin{itemize}
+\item Extend the range of supported potentials by adding the features they require.
+\item Target additional parts of LAMMPS, for example to enable parallelization via KOKKOS.
+\item Target the KIM API to make the generated output more generally interoperable.
+\item Perform other symbolic manipulations, e.g. calcu-\\late parameter derivatives, or accurate Hessians.
+\end{itemize}
+\end{minipage}
+\end{block}%
+\begin{block}{Conclusion}
+PotC can be a valuable tool for molecular dynamics software authors and users.
+It allows them to \dots
+
+\begin{minipage}{24.02cm}
+\vspace*{.5em}
+\begin{itemize}
+\item Quickly prototype novel potentials.
+\item Test other implementations against mechanically derived ``ground truth''.
+\item Generate mechanically optimized implementations for the ``tail'' of potentials that lacks the popularity to be ever optimized manually.
+\item Have an unambiguous and concise way to transfer and write about potentials.
+\item Avoid redundancies due to differentiation.
+\item Avoid optimizing code by hand.
+\end{itemize}
+\end{minipage}
+\end{block}
+%\begin{block}{References}%
+%many-body paper plimpton/thompson, implementing some many-body potentials papers
+%\end{block}%
+%
+\end{column}%
+%
+\end{columns}%
+%
+\end{frame}
+
+

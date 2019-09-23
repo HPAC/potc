@@ -1,0 +1,14 @@
+parameter cutoff = file(1);
+parameter grid_size_rho = file(2);
+parameter grid_size = file(3);
+parameter rho(i : atom_type; j : atom_type; r : distance) =
+    spline_grid(rho, 3, 0, grid_size, 3);
+parameter F(i : atom_type; r : real) =
+    spline_grid(F, 3, 0, grid_size_rho, 1);
+parameter phi(i : atom_type; j : atom_type; r : distance) = 
+    spline_grid(phi, 3, 0, grid_size, 3);
+
+peratom rho_sum(i : atom) = sum(j : neighbors(i, cutoff)) rho(i, j, r(i, j));
+
+energy sum(i : all_atoms) F(i, rho_sum(i)); 
+energy sum(i : all_atoms) sum(j : neighbors_half(i, cutoff)) phi(i, j, r(i, j)) / r(i, j);

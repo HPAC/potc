@@ -1,0 +1,123 @@
+\documentclass[final,t]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amsthm,amssymb,latexsym}
+\usepackage{graphicx,epsf,epstopdf}
+\usepackage{overcite}
+% \boldmath
+\usepackage[english]{babel}
+\usepackage{wrapfig}
+% \usepackage[latin1]{inputenc}
+\usepackage{pgfplots}
+\usetikzlibrary{calc,decorations,angles,quotes,external,arrows.meta}
+%\tikzexternalize
+\usepackage{pifont}
+
+\usepackage{listings}
+
+\lstdefinelanguage{potc}{
+  morekeywords={parameter,real,type,function,peratom,atom,sum,neighbors,energy,spline,cos,energy,atom_type,all_atoms,implicit,piecewise,sin,cos,exp,file,distance}
+}
+
+\usepackage[orientation=landscape,size=a0,scale=1.15,debug]{beamerposter}
+\usepackage[tracking=true]{microtype}%
+            % Microtype ist einfach super, aber lesen Sie unbedingt die Anleitung um das Folgende zu verstehen.
+\DeclareMicrotypeSet*[tracking]{my}% 
+  { font = */*/*/sc/* }% 
+\SetTracking{ encoding = *, shape = sc }{ 45 }% Hier wird festgelegt, dass alle Passagen in Kapitälchen automatisch leicht
+            % gesperrt werden. 
+            %
+\usepackage{times}
+\usepackage{multicol}
+\usepackage{color}
+%\usepackage[squaren]{SIunits}
+%\usepackage{tikz}
+%\usepackage{pgfplots}
+%\usepackage{listings}
+\usepackage{etex}
+
+\setbeamertemplate{bibliography item}[text]
+
+\newcommand{\s}{\hat{s}}
+\def\osc{\mathop{{\rm osc}\,}}         % oscillation  %
+\def\dist{{\rm dist}\,}			 % distance %
+\def\supp{\mathop{\rm{ supp}\,}} 				%support%
+\def\ran{\mathop{{\rm range}\,}} %Range
+\newcommand{\R}{\mathcal{R}}
+\newcommand{\E}{\mathcal{E}}
+\newcommand{\dR}{{\partial\mathcal{R}}}
+\def\S{\mathcal{S}}
+\def\C{\mathcal{C}}
+\def\A{\mathcal{A}}
+\def\ds{\,{\rm d}\s}
+\def\sds{\s\!\cdot\!\s}
+
+\definecolor{rwthdarkblue}{RGB}{0,84,159}
+\definecolor{rwthlightblue}{RGB}{142,186,229}
+\definecolor{rwthdarkgray}{RGB}{100,101,103}
+\definecolor{rwthlightgray}{RGB}{236,237,237}
+
+\definecolor{rwthmagenta}{RGB}{227,0,102}
+\definecolor{rwthyellow}{RGB}{255,237,0}
+\definecolor{rwthpetrol}{RGB}{0,97,101}
+\definecolor{rwthturquoise}{RGB}{0,152,161}
+\definecolor{rwthgreen}{RGB}{87,171,39}
+\definecolor{rwthmaygreen}{RGB}{189,205,0}
+\definecolor{rwthorange}{RGB}{246,168,0}
+\definecolor{rwthred}{RGB}{204,7,30}
+\definecolor{rwthbordeauxred}{RGB}{161,16,53}
+\definecolor{rwthviolet}{RGB}{97,33,88}
+\definecolor{rwthpurple}{RGB}{122,111,172}
+
+
+\mode<presentation>{\usetheme{AICESposter}}
+
+\setlength{\baselineskip}{1.2\baselineskip}
+
+% Poster title
+\makeatletter
+\newcommand\thefontsize[1]{{#1 The current font size is: \f@size pt\par}}
+\makeatother
+
+%\title{AIREBO Optimization in LAMMPS for KNL}
+\title{PotC: Many-body potential implementations \`a la carte}
+\author{Markus H\"ohnerbachh}
+
+\setbeamertemplate{headline}{  
+   \begin{beamercolorbox}[wd=\paperwidth]{headline}
+    \hspace*{4.39cm}
+    \begin{beamercolorbox}[wd=110.08cm]{headline}
+     \vspace*{3.39cm}
+     \rule{110.08cm}{2pt}
+\hbox{%
+      \begin{beamercolorbox}[wd=84.06cm, ht=6cm]{headline}
+      \begin{beamercolorbox}[wd=84.06cm, ht=4.5cm]{headline}
+%       \centering
+       \usebeamercolor{title in headline}{\color{fg}\textbf{\Huge{\inserttitle}}}
+      \end{beamercolorbox}
+      \begin{beamercolorbox}[wd=84.06cm, ht=1.5cm]{headline}
+%\centering
+       \usebeamercolor{author in headline}{\color{fg}\normalsize{\insertauthor}; Advisor: Paolo Bientinesi}
+      \end{beamercolorbox}%
+      \end{beamercolorbox}%
+      \begin{beamercolorbox}[wd=26.02cm, ht=6cm, right]{headline}
+        %\includegraphics[height=4.0cm]{dfg-logo.jpg}%
+        %%%\hspace*{1.5cm}%
+        %%%\includegraphics[height=3.5cm]{intel-logo.jpg}
+      \end{beamercolorbox}%
+}%
+    \end{beamercolorbox}
+  \end{beamercolorbox}
+}
+
+%\begin{center}%
+%{\Huge\inserttitle}\par%
+%\vspace*{1ex}
+%\normalsize\insertauthor, Advisors: Ahmed E. Ismail, Paolo Bientinesi
+%\end{center}
+
+\begin{document}
+
+\input{content}
+
+\end{document}

@@ -1,0 +1,142 @@
+% this style was created by Philippe Dreuw and Thomas Deselaers
+% modified version by Herbert Egger and Christian Waluga
+\ProvidesPackage{beamerthemeAICESposter} 
+\mode<presentation>
+
+\geometry{left=4.39cm,right=4.39cm}%,headsep=3cm}
+\usepackage[skins]{tcolorbox}
+
+\definecolor{rwth100blue}{RGB}{0,84,159}
+\definecolor{rwth75blue}{RGB}{64,127,183}
+\definecolor{rwth50blue}{RGB}{142,186,229}
+\definecolor{rwth25blue}{RGB}{199,221,242}
+\definecolor{rwth10blue}{RGB}{232,241,250}
+\definecolor{rwth75black}{RGB}{100,101,103}
+\definecolor{rwth50black}{RGB}{156,158,159}
+\definecolor{rwth25black}{RGB}{207,209,210}
+\definecolor{rwth10black}{RGB}{236,237,237}
+\definecolor{rwthdarkgray}{RGB}{100,101,103}
+\definecolor{rwthlightgray}{RGB}{236,237,237}
+\definecolor{rwthmagenta}{RGB}{227,0,102}
+\definecolor{rwthyellow}{RGB}{255,237,0}
+\definecolor{rwthpetrol}{RGB}{0,97,101}
+\definecolor{rwthturquoise}{RGB}{0,152,161}
+\definecolor{rwthgreen}{RGB}{87,171,39}
+\definecolor{rwthmaygreen}{RGB}{189,205,0}
+\definecolor{rwthorange}{RGB}{246,168,0}
+\definecolor{rwthred}{RGB}{204,7,30}
+\definecolor{rwthbordeauxred}{RGB}{161,16,53}
+\definecolor{rwthviolet}{RGB}{97,33,88}
+\definecolor{rwthpurple}{RGB}{122,111,172}
+
+
+\setbeamercolor*{palette primary}{fg=black,bg=white}
+\setbeamercolor*{palette secondary}{fg=rwth50blue,bg=white}
+\setbeamercolor*{palette tertiary}{bg=rwth75blue,fg=white}
+\setbeamercolor*{palette quaternary}{fg=rwth100blue,bg=white}
+
+
+\setbeamercolor{headline}{fg=black}
+\setbeamercolor{figures}{fg=black,bg=black}
+\setbeamercolor{author in head/foot}{fg=rwth75black}
+\setbeamercolor{title in head/foot}{fg=rwth75black}
+\setbeamercolor*{normal text}{fg=black}
+\setbeamercolor*{block body}{fg=black}
+\setbeamercolor*{block title}{fg=white, bg=rwth100blue}%, bg=rwth25blue}
+\setbeamercolor{lower separation line head}{fg=rwth75blue}
+\setbeamercolor{alerted text}{fg=rwthred}
+\setbeamercolor{block body example}{bg=normal text.bg!90!black}
+\setbeamercolor{block body example}{bg=normal text.bg!90!black}
+
+
+\setlength{\itemsep}{10em}
+\setbeamercolor{structure}{fg=rwth75blue}
+\setbeamertemplate{itemize items}[triangle]
+\setbeamertemplate{navigation symbols}{}  % no navigation on a poster
+
+\setbeamertemplate{block begin}{
+  \begin{beamercolorbox}[sep=.75ex]{block title}%
+%    \usebeamerfont*{block title}\insertblocktitle\parbox{0pt}{\rule{0pt}{2.0ex}}
+    \usebeamerfont*{block title}\insertblocktitle\rule[-0.2\baselineskip]{0pt}{1\baselineskip}
+%    \usebeamerfont*{block title}\strut\insertblocktitle
+%    \usebeamerfont*{block title}\insertblocktitle
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[sep=1.5ex]{block body}%
+}
+\setbeamertemplate{block end}{
+  \end{beamercolorbox}
+}
+
+\setbeamertemplate{headline}{  
+   \begin{beamercolorbox}[wd=\paperwidth]{headline}
+    \hspace*{4.39cm}
+    \begin{beamercolorbox}[wd=110.08cm]{headline}
+     \vspace*{4.39cm}
+     \rule{110.08cm}{2pt}
+\hbox{%
+      \begin{beamercolorbox}[wd=84.06cm, ht=4.5cm]{headline}
+       \usebeamercolor{title in headline}{\color{fg}\textbf{\Huge{\inserttitle}}}
+      \end{beamercolorbox}%
+      \begin{beamercolorbox}[wd=26.02cm, ht=4.5cm]{headline}
+       \usebeamercolor{author in headline}{\color{fg}\normalsize{\insertauthor}\par\vspace*{1ex} Advisor: Paolo Bientinesi}
+      \end{beamercolorbox}%
+}%
+    \end{beamercolorbox}
+  \end{beamercolorbox}
+}
+
+\setbeamertemplate{footline}{
+   \begin{beamercolorbox}[wd=\paperwidth]{footline}
+    \hspace*{4.39cm}
+    \begin{beamercolorbox}[wd=110.08cm]{footline}
+     \rule{110.08cm}{2pt}
+       \hbox{%
+        \begin{beamercolorbox}[wd=4.5cm,ht=9.05cm]{footline}%
+          \vbox to9.05cm{
+          \vspace*{1.25cm}
+          \includegraphics[width=2.5cm,height=2.5cm]{qrcode.png}
+          }\vfil%
+        \end{beamercolorbox}%
+        \begin{beamercolorbox}[wd=23.52cm,ht=9.05cm]{footline}%
+          \vbox to9.05cm{
+          \vspace*{1.25cm}\footnotesize
+          Markus H\"ohnerbach\par\vspace*{1ex} Telefon: +49 241 80 99 142
+          \par\vspace*{1ex}
+          E-Mail: hoehnerbach@aices.rwth-aachen.de
+          }\vfil%
+        \end{beamercolorbox}%
+        \begin{beamercolorbox}[wd=31.98cm,ht=9.05cm]{footline}%
+          \vbox to9.05cm{
+          \vspace*{1.25cm}\footnotesize
+          High Performance and Automatic Computing
+          \par\vspace*{1ex} 
+          Schinkelstr. 2, 52062 Aachen, GERMANY
+          \par\vspace*{1ex}
+          www.hpac.rwth-aachen.de
+          \par\vspace*{1ex}
+          Telefon: +49 241 80 99 131, Fax: +49 241 80 628498
+          }\vfil%
+        \end{beamercolorbox}%
+        \begin{beamercolorbox}[wd=50.08cm, ht=9.05cm]{footline}
+          \vspace*{2.235cm}
+          \begin{beamercolorbox}[wd=50.08cm,right]{footline}
+	    {{\includegraphics[height=4.58cm, trim=0 0.70cm 6.9cm 0.80cm,clip]{rwth-aices-rgb.eps}}}%
+            {{\includegraphics[height=4.58cm, trim=0 0.70cm 0.0cm 0.80cm]{hpac-rwth.eps}}}
+          \end{beamercolorbox}
+          \vspace*{2.235cm}
+        \end{beamercolorbox}%
+      }%
+    \end{beamercolorbox}
+  \end{beamercolorbox}
+}
+
+\def\blue{\color{rwth75blue}}
+\def\paragraph#1{{\par #1\par \vspace*{.5ex} \par}}
+\def\cparagraph#1{ {\par \color{rwth75blue} #1 \vspace*{.5ex} \par } }
+
+\setlength\leftmargini{5em}
+\setlength\labelsep{1em}
+\setlength\labelwidth{\leftmargini}
+\addtolength\labelwidth{-\labelsep}
+
+\mode<all>
